@@ -797,7 +797,7 @@ def complete_registration(user_id):
 
         bot.send_message(SUBSCRIBER_INFO, message_text)
 
-        bot.send_message(user_id, "Sizning hujjatlaringiz qabul qilindi va tekshiruvga berildi.\n\nTez orada siz bilan bog'lanamiz.")
+        bot.send_message(user_id, "✅Arizangiz qabul qilindi.\n\nRo'yxatga olish faqat Oktyabr va Noyabr oylari oralig'ida amalga oshiriladi. Biz siz bilan ro'yhatga olish boshlanganda yana aloqaga chiqamiz. Royhatga olinganingizdan so'ng sizga tasdiqlovchi kod (Confirmation number) yuboramiz.")
     except Exception as e:
         bot.send_message(user_id, "Ma'lumot qabul qilishda xato bor")
         # print("Error sending data to channel:", e)
