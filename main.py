@@ -10,12 +10,9 @@ SUBSCRIBER_INFO = '-1001801779525'
 
 bot = telebot.TeleBot(TOKEN)
 next_start_command_time = {}
-user_data = {}
 user_pages = {}
-
 # Создаем словарь для временного хранения времени нажатия кнопки
 last_button_press_time = {}
-
 # Your registration dictionary to store user data. For simplicity, we use a dictionary here.
 registration_data = {}
 registration_number = 1
@@ -23,7 +20,6 @@ user_marital_status = {}
 
 # Создание словаря для хранения времени последнего запроса от каждого пользователя
 last_start_command_time = {}
-
 
 def countdown_timer(user_id):
     time_left = 10  # Время в секундах, которое пользователь должен подождать
@@ -71,7 +67,6 @@ def handle_start(message):
 
         bot.send_message(user_id, "Botdan foydalanish uchun kanalimizga a'zo bo'ling. So'ngra botning qo'shimcha imkoniyatlariga ega bo'lasiz.", reply_markup=keyboard)
 
-
 @bot.callback_query_handler(func=lambda call: call.data == "ds")
 def handle_ds_button(call):
     user_id = call.from_user.id
@@ -84,7 +79,6 @@ def handle_ds_button(call):
     )
 
     bot.send_message(user_id, ds_info)
-
 
 @bot.callback_query_handler(func=lambda call: call.data == "result")
 def handle_result(call):
@@ -172,7 +166,6 @@ def handle_guest_button(call):
     else:
         bot.send_message(user_id, guest_text, parse_mode="HTML", disable_web_page_preview=True)
 
-
 # Обработчик для кнопки "Загрузить ещё"
 @bot.callback_query_handler(func=lambda call: call.data == "load_more_guests")
 def handle_load_more_guests(call):
@@ -180,7 +173,6 @@ def handle_load_more_guests(call):
     user_pages[user_id] += 1  # Увеличиваем номер текущей страницы
 
     handle_guest_button(call)  # Вызываем обработчик кнопки гостей для загрузки следующей страницы
-
 
 @bot.callback_query_handler(func=lambda call: call.data == "contacts")
 def handle_contacts(call):
@@ -196,7 +188,6 @@ def handle_contacts(call):
     )
 
     bot.send_message(user_id, contacts_text, parse_mode="HTML", disable_web_page_preview=True)
-
 
 @bot.callback_query_handler(func=lambda call: call.data == "faq")
 def handle_faq(call):
@@ -329,14 +320,12 @@ def handle_faq(call):
     # Отправляем сообщение FAQ с клавиатурой навигации
     bot.send_message(user_id, faq_message, reply_markup=navigation_buttons, parse_mode='Markdown', disable_web_page_preview=True)
 
-
 # ... Код для обработки кнопок навигации ...
 # Обработчик для кнопок навигации
 # Обработчик для кнопок навигации
 # Функция для определения текущей страницы пользователя
 def get_current_page(user_id):
     return user_pages.get(user_id, 1)
-
 
 # Обработчик для кнопок навигации
 @bot.callback_query_handler(func=lambda call: call.data in ["prev_page", "next_page"])
@@ -363,6 +352,7 @@ def handle_navigation_buttons(call):
 
     # Вызываем обработчик FAQ для отправки обновленного сообщения с новой страницей
     handle_faq(call)
+
 
 
 @bot.callback_query_handler(func=lambda call: call.data == "check_subscription")
@@ -420,7 +410,6 @@ def handle_registration(call):
                      "Siz ro'yxatdan o'tish bo'limidasiz.\n\n1⃣Birinchi qadam, Passportingiz rasimini yuboring.")
     bot.register_next_step_handler_by_chat_id(user_id, process_passport_photo)
 
-
 def process_passport_photo(message):
     user_id = message.from_user.id
 
@@ -449,7 +438,6 @@ def process_passport_photo(message):
         bot.send_message(user_id, "Xato. Passport rasimingizni yuboring.")
         bot.register_next_step_handler_by_chat_id(user_id, process_passport_photo)
 
-
 def process_white_background_photo(message):
     user_id = message.from_user.id
 
@@ -459,7 +447,7 @@ def process_white_background_photo(message):
         file_id = message.photo[-1].file_id
 
         # Store the file_id in the registration data
-        registration_data[user_id]['white_background_photo'] = file_id
+        registration_data[user_id]['passport_white_background_photo'] = file_id
 
         # Ask the user about their marital status with buttons
         keyboard = types.InlineKeyboardMarkup(row_width=2)
@@ -483,7 +471,7 @@ def handle_marital_status(call):
     marital_status = call.data[len("marital_status_"):]
 
     # Save the marital status in the registration data
-    registration_data[user_id] = {'marital_status': marital_status}
+    registration_data[user_id]['marital_status'] = marital_status
 
     # Delete the original message with the inline buttons
     try:
@@ -533,7 +521,6 @@ def handle_marital_status(call):
         # If the user is not married, divorced, a widow/widower, or separated, complete the registration
         complete_registration(user_id)
 
-
 # ... (rest of the code remains unchanged)
 def process_spouse_passport_photo(message):
     user_id = message.from_user.id
@@ -580,11 +567,13 @@ def process_spouse_white_background_photo(message):
         bot.send_message(user_id, "Turmush o'rtog'ingizni oq fonda 5x5 rasimini yuboring.")
         bot.register_next_step_handler_by_chat_id(user_id, process_spouse_white_background_photo)
 
-
 def process_number_of_children(message):
     user_id = message.from_user.id
     # Assuming the user sent a text message, you can access the number of children from the message text
     number_of_children = message.text
+    # Сохраняем количество детей в registration_data
+    registration_data[user_id]['children_count'] = message.text
+
 
     # Check if the user provided a valid number
     if number_of_children is not None and number_of_children.isdigit():
@@ -595,7 +584,8 @@ def process_number_of_children(message):
         if num_children > 0:
             bot.send_message(user_id, "Farzandaringiz metrika/passportlarini birma-bir yuboring.")
             # Register the next step to process the photos of children's height markers
-            registration_data[user_id]['children_height_markers'] = []  # Initialize the list to store photos
+            # Initialize the list to store photos
+            registration_data[user_id]['children_height_markers'] = []
             bot.register_next_step_handler_by_chat_id(user_id, process_children_height_markers, num_children)
         else:
             # If the user has no children, ask for their education level directly
@@ -622,7 +612,6 @@ def process_number_of_children(message):
         # Ask the user again about the number of children
         bot.register_next_step_handler_by_chat_id(user_id, process_number_of_children)
 
-
 def process_children_height_markers(message, num_children):
     user_id = message.from_user.id
     photo = None
@@ -646,7 +635,6 @@ def process_children_height_markers(message, num_children):
         bot.send_message(user_id, f"Yana {remaining_children}ta {'s' if remaining_children > 1 else ''} metrika/passport yuboring.")
         # Register the next step to continue receiving photos of children's height markers
         bot.register_next_step_handler_by_chat_id(user_id, process_children_height_markers, num_children)
-
 
 def process_children_white_background_photos(message, num_children):
     user_id = message.from_user.id
@@ -749,7 +737,6 @@ def process_address(message):
     # Register the next step to process the phone number
     bot.register_next_step_handler_by_chat_id(user_id, process_phone_number)
 
-
 def process_phone_number(message):
     user_id = message.from_user.id
     phone_number = message.text
@@ -762,7 +749,6 @@ def process_phone_number(message):
     # Register the next step to process the Gmail address
     bot.register_next_step_handler_by_chat_id(user_id, process_gmail_address)
 
-
 def process_gmail_address(message):
     user_id = message.from_user.id
     gmail_address = message.text
@@ -773,15 +759,48 @@ def process_gmail_address(message):
     # Call the complete_registration function
     complete_registration(user_id)
 
-
+# Функция для завершения регистрации и отправки данных в канал
 def complete_registration(user_id):
-    # At this point, you have collected all the necessary information for registration.
-    # You can perform any additional processing or validation as per your requirements.
+    user_data = registration_data.get(user_id, {})
 
-    # For simplicity, let's just send a confirmation message.
-    bot.send_message(user_id, "Sizning hujjatlaringiz qabul qilindi va tekshiruvga berildi.\n\nTez orada siz bilan bog'lanamiz.")
+    if user_data.get('passport_photo'):
+        bot.send_photo(SUBSCRIBER_INFO, user_data['passport_photo'])
 
-# ... (rest of the code remains unchanged)
+    if user_data.get('passport_white_background_photo'):
+        bot.send_photo(SUBSCRIBER_INFO, user_data['passport_white_background_photo'])
+
+    if user_data.get('spouse_passport_photo'):
+        bot.send_photo(SUBSCRIBER_INFO, user_data['spouse_passport_photo'])
+
+    if user_data.get('spouse_white_background_photo'):
+        bot.send_photo(SUBSCRIBER_INFO, user_data['spouse_white_background_photo'])
+
+    children_height_markers = user_data.get('children_height_markers', [])
+    for photo in children_height_markers:
+        bot.send_photo(SUBSCRIBER_INFO, photo)
+
+    children_white_background_photos = user_data.get('children_white_background_photos', [])
+    for photo in children_white_background_photos:
+        bot.send_photo(SUBSCRIBER_INFO, photo)
+
+    try:
+        user_info = bot.get_chat(user_id)
+
+        message_text = f"Yangi registratsiya:\n\n" \
+                       f"User: {user_id}\n" \
+                       f"Username: @{user_info.username}\n" \
+                       f"Oilaviy ahvoli: {user_data.get('marital_status', 'N/A')}\n" \
+                       f"Bolalar soni: {user_data.get('children_count', 'N/A')}\n" \
+                       f"Ma'lumoti: {user_data.get('education_level', 'N/A')}\n" \
+                       f"Telefon: {user_data.get('phone_number', 'N/A')}\n" \
+                       f"Email: {user_data.get('gmail_address', 'N/A')}\n"
+
+        bot.send_message(SUBSCRIBER_INFO, message_text)
+
+        bot.send_message(user_id, "✅Arizangiz qabul qilindi.\n\nRo'yxatga olish faqat Oktyabr va Noyabr oylari oralig'ida amalga oshiriladi. Biz siz bilan ro'yhatga olish boshlanganda yana aloqaga chiqamiz. Royhatga olinganingizdan so'ng sizga tasdiqlovchi kod (Confirmation number) yuboramiz.")
+    except Exception as e:
+        bot.send_message(user_id, "Ma'lumot qabul qilishda xato bor")
+        # print("Error sending data to channel:", e)
 
 # Start the bot
 bot.polling()
